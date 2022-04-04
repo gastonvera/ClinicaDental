@@ -3,11 +3,13 @@ package com.example.ClinicaDental.repository.implementation;
 import com.example.ClinicaDental.repository.IDaoDentist;
 import com.example.ClinicaDental.entity.Address;
 import com.example.ClinicaDental.entity.Dentist;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class DentistDaoH2 implements IDaoDentist<Dentist> {
 
     private final AddressDaoH2 addressDaoH2 = new AddressDaoH2();
@@ -52,27 +54,27 @@ public class DentistDaoH2 implements IDaoDentist<Dentist> {
     }
 
     @Override
-    public Dentist update(int id, String newName) {
+    public Dentist update(int id, Dentist dentist) {
         Connection connection;
         PreparedStatement preparedStatement;
-        Dentist dentist = null;
 
         try {
             //1 Levantar el driver y Conectarnos
             connection = ConnectionH2.getConnection();
 
             //2 Crear una sentencia
-            preparedStatement = connection.prepareStatement("UPDATE dentists SET name = ? WHERE id = ?;");
-            preparedStatement.setString(1,newName);
-            preparedStatement.setInt(2,id);
+            preparedStatement = connection.prepareStatement("UPDATE dentists SET name = ?,lastname = ?, email = ?,matricula = ?, dni = ?, address_id = ? WHERE id = ?;");
+            preparedStatement.setString(1, dentist.getName());
+            preparedStatement.setString(2, dentist.getLastname());
+            preparedStatement.setString(3,dentist.getEmail());
+            preparedStatement.setString(4,dentist.getMatricula());
+            preparedStatement.setInt(5, dentist.getDni());
+            preparedStatement.setInt(6, dentist.getAddress().getId());
+            preparedStatement.setInt(7,id);
 
             //3 Ejecutar una sentencia SQL
             preparedStatement.executeUpdate();
-
-            //4 Obtener resultados
-
-            dentist = findById(id);
-
+            dentist.setId((long) id);
             preparedStatement.close();
         } catch (SQLException | ClassNotFoundException throwables) {
             throwables.printStackTrace();

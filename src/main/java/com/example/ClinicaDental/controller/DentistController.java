@@ -1,26 +1,26 @@
 package com.example.ClinicaDental.controller;
 
-import com.example.ClinicaDental.repository.implementation.DentistDaoH2;
 import com.example.ClinicaDental.entity.Dentist;
 import com.example.ClinicaDental.service.DentistService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.rmi.ServerException;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/odontologos")
 public class DentistController {
-    private DentistService dentistService = new DentistService(new DentistDaoH2());
+
+    @Autowired
+    private DentistService dentistService;
 
     /** Aqui voy a cargar los dentistas */
 
-    @PostMapping(path = "/",
+    @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Dentist> create(@RequestBody Dentist newDentist) throws ServerException {
@@ -43,27 +43,34 @@ public class DentistController {
         }
     }
 
-    /**Aqui voy a mostrar en en endpoint index todos los dentistas */
-
-    @GetMapping("/list")
-    public String welcome(Model model) {
-        var dentists = dentistService.findAll();
-        model.addAttribute("dentists",dentists);
-        return "dentists";
-    }
-
     /** Aqui voy a modificar a un dentista */
 
-    @PutMapping("/{id}/{newName}")
-    public ResponseEntity<Dentist> update(@PathVariable int id , @PathVariable String newName) throws ServerException{
-        if(dentistService.update(id,newName) == null){
+    @PutMapping("/{id}")
+    public ResponseEntity<Dentist> update(@PathVariable int id , @RequestBody Dentist dentist) throws ServerException{
+        if(dentistService.update(id,dentist) == null){
             throw new ServerException("No se encontro el odontologo");
         } else {
-            return ResponseEntity.ok(dentistService.update(id,newName));
+            return ResponseEntity.ok(dentistService.update(id,dentist));
         }
     }
 
-    @GetMapping("/")
+    /** Aqui voy a eliminar a un odontologo */
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminar(@PathVariable Integer id) {
+        ResponseEntity<String> response = null;
+
+        if (dentistService.findById(id) != null) {
+            dentistService.delete(id);
+            response = ResponseEntity.status(HttpStatus.NO_CONTENT).body("Turno eliminado");
+        } else {
+            response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return response;
+    }
+
+    @GetMapping
     public ResponseEntity<List<Dentist>> findAllDentists() throws ServerException {
         if (dentistService.findAll() == null){
             throw new ServerException("Lista vacia");

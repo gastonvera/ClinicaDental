@@ -5,11 +5,13 @@ import com.example.ClinicaDental.entity.Appointment;
 import com.example.ClinicaDental.entity.Dentist;
 import com.example.ClinicaDental.entity.Patient;
 import com.example.ClinicaDental.util.Util;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AppointmentDaoH2 implements IDaoAppointment<Appointment> {
 
     private final PatientDaoH2 patientDaoH2 = new PatientDaoH2();
@@ -38,9 +40,7 @@ public class AppointmentDaoH2 implements IDaoAppointment<Appointment> {
 
             preparedStatement.setInt(1, Math.toIntExact(appointment.getPatient().getId()));
             preparedStatement.setInt(2, Math.toIntExact(appointment.getDentist().getId()));
-
             preparedStatement.setDate(3, Util.utilDateToSqlDate(appointment.getDate()));
-
             preparedStatement.setInt(4, appointment.getConsultingRoom());
 
             //3 Ejecutar una sentencia SQL y obtener los ID que se autogeneraron en la base de datos
@@ -58,26 +58,24 @@ public class AppointmentDaoH2 implements IDaoAppointment<Appointment> {
     }
 
     @Override
-    public Appointment update(int id, int room) {
+    public Appointment update(int id, Appointment appointment) {
             Connection connection;
             PreparedStatement preparedStatement;
-            Appointment appointment = null;
             try {
                 //1 Levantar el driver y Conectarnos
                 connection = ConnectionH2.getConnection();
 
                 //2 Crear una sentencia
-                preparedStatement = connection.prepareStatement("UPDATE appointments SET consulting_room = ? WHERE id = ?;");
-                preparedStatement.setInt(1,room);
-                preparedStatement.setInt(2,id);
+                preparedStatement = connection.prepareStatement("UPDATE appointments SET patient_id = ?, dentist_id = ?,consulting_date = ?, consulting_room = ? WHERE id = ?;");
+                preparedStatement.setInt(1, Math.toIntExact(appointment.getPatient().getId()));
+                preparedStatement.setInt(2, Math.toIntExact(appointment.getDentist().getId()));
+                preparedStatement.setDate(3, Util.utilDateToSqlDate(appointment.getDate()));
+                preparedStatement.setInt(4, appointment.getConsultingRoom());
+                preparedStatement.setInt(5,id);
 
                 //3 Ejecutar una sentencia SQL
                 preparedStatement.executeUpdate();
-
-                //4 Obtener resultados
-
-                appointment = findById(id);
-
+                appointment.setId((long) id);
                 preparedStatement.close();
             } catch (SQLException | ClassNotFoundException throwables) {
                 throwables.printStackTrace();

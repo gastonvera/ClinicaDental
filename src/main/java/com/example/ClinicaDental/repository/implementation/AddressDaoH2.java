@@ -2,11 +2,13 @@ package com.example.ClinicaDental.repository.implementation;
 
 import com.example.ClinicaDental.repository.IDaoAddress;
 import com.example.ClinicaDental.entity.Address;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AddressDaoH2 implements IDaoAddress<Address> {
     @Override
     public Address save(Address address) {

@@ -1,27 +1,26 @@
 package com.example.ClinicaDental.controller;
 
-import com.example.ClinicaDental.entity.Patient;
-import com.example.ClinicaDental.repository.implementation.AppointmentDaoH2;
 import com.example.ClinicaDental.entity.Appointment;
 import com.example.ClinicaDental.service.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.rmi.ServerException;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/turnos")
 public class AppointmentController {
-    private AppointmentService appointmentService = new AppointmentService(new AppointmentDaoH2());
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     /** Aqui voy a cargar los turnos*/
 
-    @PostMapping(path = "/",
+    @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Appointment> create(@RequestBody Appointment newAppointment) throws ServerException {
@@ -43,27 +42,35 @@ public class AppointmentController {
             return ResponseEntity.ok(appointmentService.findById(id));
         }
     }
-    /**Aqui voy a mostrar en en endpoint index todos los turnos */
-
-    @GetMapping("/list")
-    public String welcome(Model model) {
-        var appointments = appointmentService.findAll();
-        model.addAttribute("appointments",appointments);
-        return "appointments";
-    }
 
     /** Aqui voy a modificar a un turno*/
 
-    @PutMapping("/{id}/{room}")
-    public ResponseEntity<Appointment> update(@PathVariable int id , @PathVariable int room) throws ServerException{
-        if(appointmentService.update(id,room) == null){
+    @PutMapping("/{id}")
+    public ResponseEntity<Appointment> update(@PathVariable int id , @RequestBody Appointment appointment) throws ServerException{
+        if(appointmentService.update(id,appointment) == null){
             throw new ServerException("No se encontro el paciente");
         } else {
-            return ResponseEntity.ok(appointmentService.update(id,room));
+            return ResponseEntity.ok(appointmentService.update(id,appointment));
         }
     }
 
-    @GetMapping("/")
+    /** Aqui voy a eliminar a un turno */
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminar(@PathVariable Integer id) {
+        ResponseEntity<String> response = null;
+
+        if (appointmentService.findById(id) != null) {
+            appointmentService.delete(id);
+            response = ResponseEntity.status(HttpStatus.NO_CONTENT).body("Turno eliminado");
+        } else {
+            response = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return response;
+    }
+
+    @GetMapping
     public ResponseEntity<List<Appointment>> findAllPatients() throws Exception {
         if (appointmentService.findAll() == null){
             throw new ServerException("Lista vacia");

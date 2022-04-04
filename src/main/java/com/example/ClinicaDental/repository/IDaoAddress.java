@@ -1,7 +1,9 @@
 package com.example.ClinicaDental.repository;
 
-import java.util.List;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+@Service
 public interface IDaoAddress<T> {
 
     public T save(T t);

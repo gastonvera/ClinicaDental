@@ -4,11 +4,13 @@ import com.example.ClinicaDental.repository.IDaoPatient;
 import com.example.ClinicaDental.entity.Address;
 import com.example.ClinicaDental.entity.Patient;
 import com.example.ClinicaDental.util.Util;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class PatientDaoH2 implements IDaoPatient<Patient> {
 
     private final AddressDaoH2 addressDaoH2 = new AddressDaoH2();
@@ -52,26 +54,27 @@ public class PatientDaoH2 implements IDaoPatient<Patient> {
     }
 
     @Override
-    public Patient update(int id, String newName) {
+    public Patient update(int id, Patient patient) {
         Connection connection;
         PreparedStatement preparedStatement;
-        Patient patient = null;
         try {
             //1 Levantar el driver y Conectarnos
             connection = ConnectionH2.getConnection();
 
             //2 Crear una sentencia
-            preparedStatement = connection.prepareStatement("UPDATE patients SET name = ? WHERE id = ?;");
-            preparedStatement.setString(1,newName);
-            preparedStatement.setInt(2,id);
+            preparedStatement = connection.prepareStatement("UPDATE patients SET id = ?, name = ?, lastname = ?, email = ?, dni = ?, addmission_date = ?, address_id = ? WHERE id = ?;");
+            preparedStatement.setInt(1,id);
+            preparedStatement.setString(2,patient.getName());
+            preparedStatement.setString(3, patient.getLastname());
+            preparedStatement.setString(4,patient.getEmail());
+            preparedStatement.setInt(5, patient.getDni());
+            preparedStatement.setDate(6, Util.utilDateToSqlDate(patient.getAdmissionDate()));
+            preparedStatement.setInt(7, patient.getAddress().getId());
+            preparedStatement.setInt(8,id);
 
             //3 Ejecutar una sentencia SQL
             preparedStatement.executeUpdate();
-
-            //4 Obtener resultados
-
-            patient = findById(id);
-
+            patient.setId((long) id);
             preparedStatement.close();
         } catch (SQLException | ClassNotFoundException throwables) {
             throwables.printStackTrace();
@@ -88,11 +91,15 @@ public class PatientDaoH2 implements IDaoPatient<Patient> {
             //1 Levantar el driver y Conectarnos
             connection = ConnectionH2.getConnection();
 
-            //2 Crear una sentencia
+            //2 Borramos el domicilio del paciente
+            int idDomicilio = findById(id).getAddress().getId();
+            addressDaoH2.delete(idDomicilio);
+
+            //3 Crear una sentencia
             preparedStatement = connection.prepareStatement("DELETE FROM patients where id = ?");
             preparedStatement.setInt(1,id);
 
-            //3 Ejecutar una sentencia SQL
+            //4 Ejecutar una sentencia SQL
             preparedStatement.executeUpdate();
             preparedStatement.close();
         } catch (SQLException | ClassNotFoundException throwables) {

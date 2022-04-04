@@ -2,9 +2,11 @@ package com.example.ClinicaDental.service;
 
 import com.example.ClinicaDental.repository.IDaoDentist;
 import com.example.ClinicaDental.entity.Dentist;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class DentistService {
 
     private IDaoDentist<Dentist> dentistIDao;
@@ -16,7 +18,7 @@ public class DentistService {
     public Dentist save(Dentist d){
         return dentistIDao.save(d);
     }
-    public Dentist update(int id, String newName){return dentistIDao.update(id,newName);}
+    public Dentist update(int id, Dentist dentist){return dentistIDao.update(id,dentist);}
     public Dentist findById(int id){
         return dentistIDao.findById(id);
     }

@@ -20,14 +20,6 @@ public class Patient {
         this.address = address;
     }
 
-    /*Sobrecargo al constructor
-    public Patient(String name, String lastname){
-        this.name = name;
-        this.lastname = lastname;
-    }
-
-     */
-
     public Address getAddress() {
         return address;
     }
